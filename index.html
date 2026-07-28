@@ -20,6 +20,7 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
       overflow: hidden;
+      user-select: none; /* Запрещаем выделение текста при частых кликах */
     }
 
     .card {
@@ -58,7 +59,6 @@
       line-height: 1.5;
     }
 
-    /* Зона кнопок */
     .buttons-container {
       position: relative;
       width: 100%;
@@ -100,7 +100,8 @@
       position: absolute;
       left: 55%;
       top: 0;
-      transition: left 0.2s ease-out, top 0.2s ease-out;
+      /* Мгновенная анимация 0.15s, чтобы нельзя было успеть кликнуть */
+      transition: left 0.15s ease-out, top 0.15s ease-out;
       z-index: 10;
     }
   </style>
@@ -131,7 +132,6 @@
       return Math.random() * (max - min) + min;
     }
 
-    // Проверка пересечения двух прямоугольников
     function isOverlapping(x1, y1, w1, h1, x2, y2, w2, h2) {
       return !(x1 + w1 < x2 || x1 > x2 + w2 || y1 + h1 < y2 || y1 > y2 + h2);
     }
@@ -143,14 +143,13 @@
       const btnNoWidth = noBtn.offsetWidth;
       const btnNoHeight = noBtn.offsetHeight;
 
-      // Координаты и размеры кнопки "Да" относительно контейнера
       const yesLeft = yesBtn.offsetLeft;
       const yesTop = yesBtn.offsetTop;
       const yesWidth = yesBtn.offsetWidth;
       const yesHeight = yesBtn.offsetHeight;
 
       const padding = 8;
-      const marginAroundYes = 10; // Дополнительный отступ вокруг кнопки "Да"
+      const marginAroundYes = 12;
 
       const maxLeft = containerWidth - btnNoWidth - padding;
       const maxHeight = containerHeight - btnNoHeight - padding;
@@ -159,7 +158,6 @@
       let attempts = 0;
       let overlap = false;
 
-      // Пробуем найти позицию, которая не перекрывает кнопку "Да"
       do {
         newLeft = getRandomNumber(padding, Math.max(padding, maxLeft));
         newTop = getRandomNumber(padding, Math.max(padding, maxHeight));
@@ -173,15 +171,25 @@
         );
 
         attempts++;
-      } while (overlap && attempts < 30); // Ограничиваем попытки для защиты от бесконечного цикла
+      } while (overlap && attempts < 30);
 
       noBtn.style.left = `${newLeft}px`;
       noBtn.style.top = `${newTop}px`;
     }
 
+    // 1. Убегает при наведении
     noBtn.addEventListener('mouseover', moveButton);
+
+    // 2. Убегает при приближении/касании пальцем на смартфонах
     noBtn.addEventListener('touchstart', (e) => {
       e.preventDefault();
+      moveButton();
+    });
+
+    // 3. ЗАЩИТА: Если каким-то чудом кликнули — не даем нажать, а просто убегаем!
+    noBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       moveButton();
     });
 
