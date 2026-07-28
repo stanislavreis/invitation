@@ -20,7 +20,7 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
       overflow: hidden;
-      user-select: none; /* Запрещаем выделение текста при частых кликах */
+      user-select: none;
     }
 
     .card {
@@ -59,6 +59,7 @@
       line-height: 1.5;
     }
 
+    /* Идеальное флекс-выравнивание кнопок по центру изначально */
     .buttons-container {
       position: relative;
       width: 100%;
@@ -93,16 +94,13 @@
       transform: scale(1.08);
     }
 
+    /* Изначально обычная кнопка рядом с "Да" */
     .btn-no {
       background-color: #dc3545;
       color: white;
       box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
-      position: absolute;
-      left: 55%;
-      top: 0;
-      /* Мгновенная анимация 0.15s, чтобы нельзя было успеть кликнуть */
-      transition: left 0.15s ease-out, top 0.15s ease-out;
       z-index: 10;
+      transition: left 0.15s ease-out, top 0.15s ease-out;
     }
   </style>
 </head>
@@ -137,6 +135,15 @@
     }
 
     function moveButton() {
+      // При первом контакте фиксируем позицию через absolute
+      if (noBtn.style.position !== 'absolute') {
+        const initialLeft = noBtn.offsetLeft;
+        const initialTop = noBtn.offsetTop;
+        noBtn.style.position = 'absolute';
+        noBtn.style.left = `${initialLeft}px`;
+        noBtn.style.top = `${initialTop}px`;
+      }
+
       const containerWidth = container.clientWidth;
       const containerHeight = container.clientHeight;
 
@@ -177,16 +184,12 @@
       noBtn.style.top = `${newTop}px`;
     }
 
-    // 1. Убегает при наведении
     noBtn.addEventListener('mouseover', moveButton);
-
-    // 2. Убегает при приближении/касании пальцем на смартфонах
     noBtn.addEventListener('touchstart', (e) => {
       e.preventDefault();
       moveButton();
     });
 
-    // 3. ЗАЩИТА: Если каким-то чудом кликнули — не даем нажать, а просто убегаем!
     noBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
