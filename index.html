@@ -19,7 +19,7 @@
       background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
-      overflow: hidden;
+      overflow: hidden; /* Важно, чтобы кнопка не создавала полосы прокрутки */
     }
 
     .card {
@@ -31,6 +31,7 @@
       max-width: 400px;
       width: 90%;
       position: relative;
+      z-index: 10; /* Карточка всегда поверх убегающей кнопки */
     }
 
     .heart {
@@ -62,7 +63,6 @@
       display: flex;
       justify-content: center;
       gap: 20px;
-      position: relative;
       min-height: 50px;
     }
 
@@ -73,81 +73,128 @@
       border: none;
       border-radius: 25px;
       cursor: pointer;
-      transition: transform 0.2s, background-color 0.2s;
     }
 
     .btn-yes {
       background-color: #28a745;
       color: white;
       box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+      transition: transform 0.2s, background-color 0.2s;
     }
 
     .btn-yes:hover {
       background-color: #218838;
-      transform: scale(1.08);
+      transform: scale(1.1);
     }
 
     .btn-no {
       background-color: #dc3545;
       color: white;
-      position: absolute;
-      /* Изначально справа от кнопки Да */
-      left: 60%;
-      transition: all 0.15s ease;
+      position: fixed; /* Кнопка позиционируется относительно окна */
+      z-index: 5; /* Ниже карточки */
+      
+      /* ПЛАВНОСТЬ: Это свойство заставляет кнопку плавно лететь в новую точку */
+      transition: all 0.3s ease-out; 
+      
+      /* Начальное положение (примерно под карточкой) */
+      top: 60%; 
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
   </style>
 </head>
 <body>
 
-  <div class="card">
+  <div class="card" id="mainCard">
     <div class="heart">💖</div>
     <h1>Пойдём на свидание?</h1>
-    <p>Я обещаю отличный вечер, вкусный кофе и классное настроение! Выберешь время?</p>
+    <p>Я обещаю отличный вечер, вкусный кофе и классное настроение!</p>
     
     <div class="buttons">
       <button class="btn btn-yes" id="yesBtn">Да! 🥰</button>
-      <button class="btn btn-no" id="noBtn">Нет 🙈</button>
+      <!-- Кнопка Нет изначально находится вне контейнера кнопок в CSS -->
     </div>
   </div>
+
+  <!-- Кнопка Нет вынесена сюда для корректного fixed позиционирования -->
+  <button class="btn btn-no" id="noBtn">Нет 🙈</button>
 
   <script>
     const noBtn = document.getElementById('noBtn');
     const yesBtn = document.getElementById('yesBtn');
+    const card = document.getElementById('mainCard');
 
-    // Настройки для обратной связи в Telegram
-    // Вариант 1: Замените 'stanislav_raise' на ваш логин без @
-    const TELEGRAM_USERNAME = 'stanislav_raise';
+    // !!! ВСТАВЬТЕ СВОИ ДАННЫЕ СЮДА !!!
+    const BOT_TOKEN = 'stanislav_raise'; 
+    const CHAT_ID = '778704677';
 
-    // Функция убегания кнопки "Нет"
-    function moveButton() {
-      // Ограничиваем область убегания видимым экраном
-      const padding = 20;
-      const maxX = window.innerWidth - noBtn.offsetWidth - padding;
-      const maxY = window.innerHeight - noBtn.offsetHeight - padding;
-
-      const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
-      const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
-
-      // Переводим в absolute от экрана
-      noBtn.style.position = 'fixed';
-      noBtn.style.left = `${randomX}px`;
-      noBtn.style.top = `${randomY}px`;
+    // Функция для получения случайного числа в диапазоне
+    function getRandomNumber(min, max) {
+      return Math.random() * (max - min) + min;
     }
 
-    // Реакция на наведение и касание (для телефонов)
+    // Логика "плавного убегания"
+    function moveButton() {
+      // Размеры кнопки
+      const btnWidth = noBtn.offsetWidth;
+      const btnHeight = noBtn.offsetHeight;
+
+      // Размеры видимого окна браузера
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+
+      // Отступы от края, чтобы кнопка не уходила за экран
+      const padding = 50;
+
+      // Вычисляем новую случайную позицию, гарантированно внутри экрана
+      let newX = getRandomNumber(padding, windowWidth - btnWidth - padding);
+      let newY = getRandomNumber(padding, windowHeight - btnHeight - padding);
+
+      // Применяем новые координаты. CSS transition (transition: all 0.3s) сделает движение плавным.
+      noBtn.style.left = `${newX}px`;
+      noBtn.style.top = `${newY}px`;
+      
+      // Убираем transform, который использовался для начального центрирования
+      noBtn.style.transform = 'none'; 
+    }
+
+    // Обработка наведения мыши (для ПК)
     noBtn.addEventListener('mouseover', moveButton);
+
+    // Обработка касания (для мобильных) - на тачскринах лучше сразу перемещать
     noBtn.addEventListener('touchstart', (e) => {
-      e.preventDefault();
+      e.preventDefault(); // Предотвращает "прокликивание"
       moveButton();
     });
 
-    // Действие при клике на "Да"
+
+    // Отправка уведомления при нажатии на "Да"
     yesBtn.addEventListener('click', () => {
-      // Текст сообщения, с которым открывается диалог
-      const message = encodeURIComponent("Привет! Я согласна на свидание! 🥰✨");
-      
-      // Перенаправляем прямо в личку Telegram
-      window.location.href = `https://t.me/${TELEGRAM_USERNAME}?text=${message}`;
+      // Блокируем кнопку, чтобы не нажимали много раз
+      yesBtn.disabled = true;
+      yesBtn.innerText = "Секундочку...";
+
+      const text = encodeURIComponent("🎉 Ура! Ответ: ДА! Пора планировать свидание! ❤️");
+      const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${text}`;
+
+      fetch(url)
+        .then(response => {
+          // Убираем кнопку "Нет" вообще
+          noBtn.style.display = 'none';
+          
+          // Меняем содержимое карточки
+          card.innerHTML = `
+            <div class="heart">🥳</div>
+            <h1>Ура! До встречи!</h1>
+            <p>Я уже планирую наш вечер. Напишу тебе совсем скоро!</p>
+          `;
+        })
+        .catch(error => {
+          console.error('Ошибка отправки:', error);
+          yesBtn.disabled = false;
+          yesBtn.innerText = "Да! 🥰";
+          alert('Ой, что-то сломалось при отправке уведомления. Но я всё равно жду!');
+        });
     });
   </script>
 </body>
