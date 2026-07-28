@@ -65,7 +65,6 @@
       align-items: center;
       gap: 20px;
       min-height: 50px;
-      position: relative;
     }
 
     .btn {
@@ -89,11 +88,13 @@
       transform: scale(1.1);
     }
 
+    /* Явные стили для кнопки НЕТ */
     .btn-no {
       background-color: #dc3545;
       color: white;
-      z-index: 100; /* Перекрывает карточку при движении */
-      transition: left 0.3s ease-out, top 0.3s ease-out;
+      box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+      z-index: 999; /* Чтобы всегда была поверх всего */
+      transition: left 0.3s ease-out, top 0.3s ease-out; /* Плавное движение */
     }
   </style>
 </head>
@@ -123,32 +124,28 @@
     }
 
     function moveButton() {
-      const btnWidth = noBtn.offsetWidth;
-      const btnHeight = noBtn.offsetHeight;
+      const btnWidth = noBtn.offsetWidth || 100;
+      const btnHeight = noBtn.offsetHeight || 40;
 
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
 
-      // При первом касании/наведении переводим кнопку в фиксированное положение
+      // При первом касании/наведении ставим фиксированное положение
       if (noBtn.style.position !== 'fixed') {
         const rect = noBtn.getBoundingClientRect();
         noBtn.style.position = 'fixed';
-        noBtn.style.left = `${rect.left}px`;
-        noBtn.style.top = `${rect.top}px`;
+        noBtn.style.left = rect.left + 'px';
+        noBtn.style.top = rect.top + 'px';
       }
 
-      const padding = 20;
+      const padding = 30;
 
-      // Расчет координат в пределах экрана
+      // Новые случайные координаты в пределах видимого экрана
       let newX = getRandomNumber(padding, windowWidth - btnWidth - padding);
       let newY = getRandomNumber(padding, windowHeight - btnHeight - padding);
 
-      // Корректируем, если вышла за границы
-      newX = Math.max(padding, Math.min(newX, windowWidth - btnWidth - padding));
-      newY = Math.max(padding, Math.min(newY, windowHeight - btnHeight - padding));
-
-      noBtn.style.left = `${newX}px`;
-      noBtn.style.top = `${newY}px`;
+      noBtn.style.left = newX + 'px';
+      noBtn.style.top = newY + 'px';
     }
 
     noBtn.addEventListener('mouseover', moveButton);
@@ -177,7 +174,7 @@
           console.error('Ошибка отправки:', error);
           yesBtn.disabled = false;
           yesBtn.innerText = "Да! 🥰";
-          alert('Произошла ошибка при отправке, но ваш выбор записан!');
+          alert('Произошла ошибка при отправке, но твой выбор принят!');
         });
     });
   </script>
