@@ -31,7 +31,6 @@
       max-width: 400px;
       width: 90%;
       position: relative;
-      z-index: 10;
     }
 
     .heart {
@@ -59,12 +58,15 @@
       line-height: 1.5;
     }
 
-    .buttons {
+    /* Блок кнопок ограничивает движение */
+    .buttons-container {
+      position: relative;
+      width: 100%;
+      height: 120px; /* Выделяем зону под текстом для беготни */
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       gap: 20px;
-      min-height: 50px;
     }
 
     .btn {
@@ -81,6 +83,7 @@
       color: white;
       box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
       transition: transform 0.2s, background-color 0.2s;
+      z-index: 2;
     }
 
     .btn-yes:hover {
@@ -88,13 +91,17 @@
       transform: scale(1.1);
     }
 
-    /* Явные стили для кнопки НЕТ */
+    /* Кнопка НЕТ привязана к внутреннему блоку карточки */
     .btn-no {
       background-color: #dc3545;
       color: white;
       box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
-      z-index: 999; /* Чтобы всегда была поверх всего */
-      transition: left 0.3s ease-out, top 0.3s ease-out; /* Плавное движение */
+      position: absolute;
+      /* Начальная позиция справа от кнопки "Да" */
+      left: 55%;
+      top: 0;
+      transition: left 0.25s ease-out, top 0.25s ease-out;
+      z-index: 10;
     }
   </style>
 </head>
@@ -105,7 +112,7 @@
     <h1>Пойдём на свидание?</h1>
     <p>Я обещаю отличный вечер, вкусный кофе и классное настроение!</p>
     
-    <div class="buttons">
+    <div class="buttons-container" id="container">
       <button class="btn btn-yes" id="yesBtn">Да! 🥰</button>
       <button class="btn btn-no" id="noBtn">Нет 🙈</button>
     </div>
@@ -115,6 +122,7 @@
     const noBtn = document.getElementById('noBtn');
     const yesBtn = document.getElementById('yesBtn');
     const card = document.getElementById('mainCard');
+    const container = document.getElementById('container');
 
     const BOT_TOKEN = '8857710803:AAEcr_NBmHmq68yjDAQk77u1U14a4vv4K4w'; 
     const CHAT_ID = '778704677';
@@ -124,28 +132,23 @@
     }
 
     function moveButton() {
-      const btnWidth = noBtn.offsetWidth || 100;
-      const btnHeight = noBtn.offsetHeight || 40;
+      // Размеры контейнера под текстом
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
 
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
+      // Размеры самой кнопки
+      const btnWidth = noBtn.offsetWidth;
+      const btnHeight = noBtn.offsetHeight;
 
-      // При первом касании/наведении ставим фиксированное положение
-      if (noBtn.style.position !== 'fixed') {
-        const rect = noBtn.getBoundingClientRect();
-        noBtn.style.position = 'fixed';
-        noBtn.style.left = rect.left + 'px';
-        noBtn.style.top = rect.top + 'px';
-      }
+      // Вычисляем новые случайные координаты СТРОГО внутри блока карточки
+      const maxLeft = containerWidth - btnWidth;
+      const maxHeight = containerHeight - btnHeight;
 
-      const padding = 30;
+      const newLeft = getRandomNumber(0, Math.max(0, maxLeft));
+      const newTop = getRandomNumber(0, Math.max(0, maxHeight));
 
-      // Новые случайные координаты в пределах видимого экрана
-      let newX = getRandomNumber(padding, windowWidth - btnWidth - padding);
-      let newY = getRandomNumber(padding, windowHeight - btnHeight - padding);
-
-      noBtn.style.left = newX + 'px';
-      noBtn.style.top = newY + 'px';
+      noBtn.style.left = `${newLeft}px`;
+      noBtn.style.top = `${newTop}px`;
     }
 
     noBtn.addEventListener('mouseover', moveButton);
