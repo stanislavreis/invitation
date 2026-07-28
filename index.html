@@ -88,19 +88,29 @@
     }
 
     .btn-no {
-      background-color: #dc3545;
-      color: white;
-      position: fixed; /* Кнопка позиционируется относительно окна */
-      z-index: 5; /* Ниже карточки */
-      
-      /* ПЛАВНОСТЬ: Это свойство заставляет кнопку плавно лететь в новую точку */
-      transition: all 0.3s ease-out; 
-      
-      /* Начальное положение (примерно под карточкой) */
-      top: 60%; 
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
+  background-color: #dc3545; /* Красный цвет */
+  color: white;
+  
+  /* КРИТИЧНО ВАЖНО: */
+  position: fixed; /* Позиционирование относительно окна */
+  z-index: 20;     /* ОЧЕНЬ ВАЖНО: Большое число, чтобы быть ПОВЕРХ карточки и всего остального */
+  
+  /* Начальное положение: чуть ниже центра экрана, чтобы её было видно */
+  top: 65%; 
+  left: 50%;
+  transform: translate(-50%, -50%); /* Центрирование самой кнопки */
+  
+  /* Плавность движения */
+  transition: all 0.3s ease-out; 
+  
+  /* Основные стили кнопки (чтобы не пропали) */
+  padding: 12px 28px;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+}
   </style>
 </head>
 <body>
