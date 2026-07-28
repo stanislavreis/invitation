@@ -58,16 +58,15 @@
       line-height: 1.5;
     }
 
-    /* Фиксированная зона внутри белой карточки */
+    /* Зона кнопок */
     .buttons-container {
       position: relative;
       width: 100%;
-      height: 110px; 
+      height: 120px; 
       display: flex;
       justify-content: center;
       align-items: flex-start;
       gap: 15px;
-      /* Важно: не даем выходить за пределы блока */
       overflow: hidden; 
       border-radius: 15px;
     }
@@ -99,7 +98,6 @@
       color: white;
       box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
       position: absolute;
-      /* Начальная позиция правее кнопки "Да" */
       left: 55%;
       top: 0;
       transition: left 0.2s ease-out, top 0.2s ease-out;
@@ -133,23 +131,49 @@
       return Math.random() * (max - min) + min;
     }
 
+    // Проверка пересечения двух прямоугольников
+    function isOverlapping(x1, y1, w1, h1, x2, y2, w2, h2) {
+      return !(x1 + w1 < x2 || x1 > x2 + w2 || y1 + h1 < y2 || y1 > y2 + h2);
+    }
+
     function moveButton() {
       const containerWidth = container.clientWidth;
       const containerHeight = container.clientHeight;
 
-      const btnWidth = noBtn.offsetWidth;
-      const btnHeight = noBtn.offsetHeight;
+      const btnNoWidth = noBtn.offsetWidth;
+      const btnNoHeight = noBtn.offsetHeight;
 
-      // Внутренний отступ (safety margin), чтобы кнопка не прилипала вплотную к краю
+      // Координаты и размеры кнопки "Да" относительно контейнера
+      const yesLeft = yesBtn.offsetLeft;
+      const yesTop = yesBtn.offsetTop;
+      const yesWidth = yesBtn.offsetWidth;
+      const yesHeight = yesBtn.offsetHeight;
+
       const padding = 8;
+      const marginAroundYes = 10; // Дополнительный отступ вокруг кнопки "Да"
 
-      // Максимально допустимые координаты с учетом размера самой кнопки
-      const maxLeft = containerWidth - btnWidth - padding;
-      const maxHeight = containerHeight - btnHeight - padding;
+      const maxLeft = containerWidth - btnNoWidth - padding;
+      const maxHeight = containerHeight - btnNoHeight - padding;
 
-      // Строго ограниченные координаты
-      let newLeft = getRandomNumber(padding, Math.max(padding, maxLeft));
-      let newTop = getRandomNumber(padding, Math.max(padding, maxHeight));
+      let newLeft, newTop;
+      let attempts = 0;
+      let overlap = false;
+
+      // Пробуем найти позицию, которая не перекрывает кнопку "Да"
+      do {
+        newLeft = getRandomNumber(padding, Math.max(padding, maxLeft));
+        newTop = getRandomNumber(padding, Math.max(padding, maxHeight));
+
+        overlap = isOverlapping(
+          newLeft, newTop, btnNoWidth, btnNoHeight,
+          yesLeft - marginAroundYes, 
+          yesTop - marginAroundYes, 
+          yesWidth + marginAroundYes * 2, 
+          yesHeight + marginAroundYes * 2
+        );
+
+        attempts++;
+      } while (overlap && attempts < 30); // Ограничиваем попытки для защиты от бесконечного цикла
 
       noBtn.style.left = `${newLeft}px`;
       noBtn.style.top = `${newTop}px`;
